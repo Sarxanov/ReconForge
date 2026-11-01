@@ -1,160 +1,88 @@
 # ReconForge
 
-**A modular network reconnaissance and reporting toolkit built with Python and Bash.**
+ReconForge is a modular Python and Bash toolkit for parsing Nmap XML results, optionally inspecting HTTP security headers on explicitly authorized URLs, and producing Markdown reports.
 
-ReconForge is a cybersecurity learning project designed to organize network reconnaissance results, inspect HTTP security headers, and generate readable assessment reports in authorized testing environments.
-
-> **Project status:** Early development. Features are being implemented incrementally.
+**Status:** Functional initial release. Runtime code uses only the Python standard library.
 
 ## Features
 
-### Planned and in development
+- Typed Nmap XML parsing for multiple hosts, states, ports, protocols, and service metadata.
+- Explicit opt-in HTTP/HTTPS inspection with conservative timeouts and same-host redirect checks.
+- Informational security-header findings for HSTS, CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Permissions-Policy.
+- Markdown report generation with safe table escaping and no-overwrite protection.
+- Argparse CLI and a working Linux launcher.
 
-- **Nmap XML Analyzer** — Parse Nmap XML output to extract hosts, ports, states, and service information.
-- **HTTP Inspector** — Inspect HTTP response status codes and selected security headers.
-- **Report Generator** — Generate Markdown reports from collected findings.
-- **Bash Launcher** — Simplify local execution on Linux.
-- **Automated Tests** — Validate parsing, HTTP inspection, and error handling.
-
-Features will be marked as implemented after they have been developed and tested.
-
-## Project Structure
+## Structure
 
 ```text
-ReconForge/
-├── reconforge/
-│   ├── __init__.py
-│   ├── cli.py
-│   ├── nmap_parser.py
-│   ├── http_inspector.py
-│   └── reporter.py
-├── scripts/
-│   └── reconforge.sh
-├── tests/
-│   ├── test_nmap_parser.py
-│   ├── test_http_inspector.py
-│   └── fixtures/
-│       └── sample_scan.xml
-├── examples/
-│   └── sample_report.md
-├── requirements.txt
-├── .gitignore
-├── LICENSE
-└── README.md
+reconforge/       Parser, HTTP inspector, reporter, and CLI
+scripts/          Linux launcher
+tests/            Unit tests and Nmap fixture
+examples/         Example generated report
 ```
 
-## Requirements
+## Requirements and installation
 
-- Python 3.10 or newer
-- Nmap installed on your system for scan generation
-- Git (optional, for cloning and version control)
-- Linux is the primary development environment
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/YOUR-USERNAME/ReconForge.git
-cd ReconForge
-```
-
-Create and activate a virtual environment:
+Python 3.10+ is required. Nmap is needed only to create XML input files; ReconForge does not run Nmap.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
-Install Python dependencies:
-
-```bash
 python -m pip install -r requirements.txt
 ```
 
-Replace `YOUR-USERNAME` with your GitHub username.
+The package can also be installed locally:
+
+```bash
+python -m pip install .
+```
 
 ## Usage
 
-ReconForge is under development, so the complete command-line workflow is not available yet.
-
-The intended workflow is:
-
-1. Run Nmap against an authorized lab target.
-2. Save the scan results in XML format.
-3. Provide the XML file to the Nmap Analyzer.
-4. Inspect HTTP services where appropriate.
-5. Generate a Markdown report.
-
-Example Nmap command for an authorized lab:
+Create an XML scan in an authorized environment, then generate a report:
 
 ```bash
 nmap -sV -oX scan.xml <AUTHORIZED_TARGET>
+python -m reconforge.cli analyze --input scan.xml --output reports
 ```
 
-`<AUTHORIZED_TARGET>` is a placeholder. Replace it with a host you own or have explicit permission to test.
+HTTP inspection is never automatic. Supply each explicitly authorized URL and opt in:
 
-The command above generates an XML file; it does not invoke ReconForge itself.
-
-## Example Output
-
-The following is illustrative output, not the result of an actual scan:
-
-```text
-ReconForge - Reconnaissance Summary
-
-Target: lab.example
-Open ports: 2
-
-PORT    STATE   SERVICE
-22/tcp  open    ssh
-80/tcp  open    http
-
-Report: reports/recon_report.md
+```bash
+python -m reconforge.cli inspect-http --url https://authorized.example
+python -m reconforge.cli analyze --input scan.xml --http \
+  --url https://authorized.example --output reports
 ```
+
+Use `--force` to replace an existing report and `--help` for complete CLI help. The launcher works from any directory:
+
+```bash
+./scripts/reconforge.sh analyze --input scan.xml
+```
+
+Output is written to `reports/reconforge-report.md` by default. See `examples/sample_report.md` for a representative report.
 
 ## Testing
 
-Automated tests will be added as modules are implemented.
+```bash
+python -m pytest
+bash -n scripts/reconforge.sh
+```
 
-The planned test coverage includes:
+HTTP tests use mocks and do not send network traffic.
 
-- Valid and malformed XML input
-- Missing files and incomplete service information
-- HTTP timeouts and connection errors
-- Missing security headers
-- Markdown report generation
+## Security and limitations
+
+Use ReconForge only against systems you own or are explicitly authorized to test. Missing headers are observations, not proof of vulnerabilities. The tool does not exploit services, bypass authentication, brute-force credentials, or automatically discover HTTP targets. Redirects to a different host are blocked. The current report format does not compare multiple scans or execute Nmap itself.
 
 ## Roadmap
 
-- [ ] Build the Nmap XML parser
-- [ ] Add unit tests for XML parsing
-- [ ] Implement HTTP security-header inspection
-- [ ] Generate Markdown reports
-- [ ] Add a Bash launcher
-- [ ] Compare results from multiple scans
-- [ ] Improve CLI usability and error handling
-- [ ] Document tested examples and limitations
+- Add optional scan comparison and richer report summaries.
+- Add packaging and CI checks for supported Python versions.
+- Expand protocol-aware inspection without increasing request volume.
 
-## Authorized Use
+## License and author
 
-ReconForge is intended for cybersecurity education and authorized security assessments.
+Released under the MIT License; see `LICENSE`.
 
-- Only scan systems you own or have explicit permission to test.
-- Follow the rules of engagement for any lab or engagement.
-- Do not treat missing HTTP headers or exposed services as proof of a vulnerability without further validation.
-- You are responsible for complying with applicable laws and policies.
-
-## Contributing
-
-Suggestions, bug reports, and improvements are welcome. Please include reproducible steps and test results when reporting issues.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-## Author
-
-**Tuncay Sarxanlı**
-
-Cybersecurity student exploring network reconnaissance, Python automation, and practical security tooling.
+**Author:** Tuncay Sarxanlı

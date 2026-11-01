@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reconforge"
+version = "1.0.0"
+description = "Modular network reconnaissance and reporting toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [{name = "Tuncay Sarxanlı"}]
+dependencies = []
+
+[project.scripts]
+reconforge = "reconforge.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

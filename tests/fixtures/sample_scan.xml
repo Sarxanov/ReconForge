@@ -1,1 +1,17 @@
-
+<?xml version="1.0"?>
+<nmaprun scanner="nmap" args="nmap -sV -oX scan.xml 192.0.2.0/24" start="1700000000">
+  <host>
+    <status state="up"/>
+    <address addr="192.0.2.10" addrtype="ipv4"/>
+    <hostnames><hostname name="app.example.test" type="user"/></hostnames>
+    <ports>
+      <port protocol="tcp" portid="22"><state state="open"/><service name="ssh" product="OpenSSH" version="9.0" extrainfo="protocol 2.0"/></port>
+      <port protocol="tcp" portid="443"><state state="open"/><service name="https" product="nginx" version="1.24"/></port>
+    </ports>
+  </host>
+  <host>
+    <status state="down"/>
+    <address addr="192.0.2.11" addrtype="ipv4"/>
+    <ports/>
+  </host>
+</nmaprun>
